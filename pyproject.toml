@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "animkit"
+version = "0.2.0"
+description = "Reusable AI-driven animation studio for ManimGL: brief -> spec -> solved layout -> validated render"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []  # stdlib-only core; manimlib/av/Pillow/kiwisolver come from the ManimGL venv at runtime
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+animkit = "animkit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["animkit*"]
+exclude = ["examples*", "tests*", "skill*", "docs*", "media*"]

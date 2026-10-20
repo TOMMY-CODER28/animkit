@@ -1,0 +1,4 @@
+{
+  "manimgl": "auto",
+  "note": "animkit discovers manimgl/ffmpeg at runtime. 'auto' = env vars, then the python next to manimgl.exe, then PATH. Put an absolute path here only to pin a specific install."
+}

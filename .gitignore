@@ -1,0 +1,21 @@
+# --- generated run artifacts -------------------------------------------------
+runs/
+media/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+
+# per-example generated output; keep the curated deliverable videos + src
+examples/*/runs/
+examples/*/media/
+examples/*/deliverables/*/frames/
+
+# editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+.local_path_tokens
