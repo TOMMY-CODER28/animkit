@@ -53,7 +53,8 @@ class Run:
         self.log_line("command: " + " ".join(_quote(a) for a in argv))
 
     # -- subprocess ----------------------------------------------------------
-    def run_subprocess(self, argv: Sequence[str], cwd: Path, timeout_s: int) -> dict:
+    def run_subprocess(self, argv: Sequence[str], cwd: Path, timeout_s: int,
+                       extra_env: dict | None = None) -> dict:
         self.log_argv(argv)
         self.log_line(f"cwd: {cwd}")
         self.log_line(f"timeout_s: {timeout_s}")
@@ -61,6 +62,10 @@ class Run:
         start = time.time()
         timed_out = False
         try:
+            full_env = None
+            if extra_env:
+                import os as _os
+                full_env = {**_os.environ, **extra_env}
             proc = subprocess.run(
                 [str(a) for a in argv],
                 cwd=str(cwd),
@@ -70,6 +75,7 @@ class Run:
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=full_env,
             )
             code = proc.returncode
         except subprocess.TimeoutExpired:

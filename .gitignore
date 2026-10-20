@@ -19,3 +19,4 @@ examples/*/deliverables/*/frames/
 Thumbs.db
 .DS_Store
 .local_path_tokens
+latex_cache/

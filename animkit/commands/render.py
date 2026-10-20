@@ -77,7 +77,13 @@ def render_video(project: Project, mode: str, run: Run, scene_override: str | No
         argv += ["-c", settings["background_color"]]
     argv += [str(project.scene_file), scene_name]
 
-    proc = run.run_subprocess(argv, cwd=project.root, timeout_s=settings["timeout_s"])
+    # TeX support: put latex/dvisvgm on the render subprocess PATH (MiKTeX
+    # user install is usually not on PATH). No-op when no TeX is installed.
+    run.log_line(f"[animkit] tex: {env.latex_status()}")
+    proc_env = env.latex_path_env()
+
+    proc = run.run_subprocess(argv, cwd=project.root, timeout_s=settings["timeout_s"],
+                              extra_env=proc_env)
 
     result = {
         "command": mode,

@@ -190,9 +190,50 @@ def make_text_component(spec: Component, **_) -> Component:
 
 def make_equation_component(spec: Component, **_) -> Component:
     c = spec.content
-    parts = [math_text(t, c.get("font_size", 34), col or INK) for t, col in c["parts"]]
-    group = VGroup(*parts).arrange(RIGHT, buff=c.get("buff", 0.12))
+    if c.get("mode") == "tex":
+        group = _make_tex_equation(c)
+    else:
+        parts = [math_text(t, c.get("font_size", 34), col or INK) for t, col in c["parts"]]
+        group = VGroup(*parts).arrange(RIGHT, buff=c.get("buff", 0.12))
     return Component(id=spec.id, ctype="equation", group=group, owner=spec.owner, region=spec.region)
+
+
+def _make_tex_equation(c: dict):
+    """Real LaTeX equation via manimlib's Tex (needs latex+dvisvgm; animkit
+    injects the TeX bin dir into PATH).
+
+    One Tex PER PART, arranged in a row. NB: this build's Tex has a cache bug
+    where tex_to_color_map can return a previously-compiled mobject (observed:
+    a second, different formula came back with the first formula's geometry),
+    so per-part construction is the reliable coloring mechanism."""
+    from animkit.env import latex_path_env
+    import os
+    os.environ["PATH"] = latex_path_env()["PATH"]
+    from manimlib import Tex
+    font = c.get("font_size", 34) * 144 // 60
+    # Each part compiles as its OWN LaTeX document, so fragments must be
+    # self-contained: \left/\right only pair within one part, and an unpaired
+    # one makes latex fail — which this ManimGL build then MASKS by silently
+    # returning the previous compile's DVI (wrong geometry, no error). Strip
+    # them; plain delimiters typeset identically at this scale.
+    sanitized = [
+        (t.replace(r"\left", "").replace(r"\right", ""), col)
+        for t, col in c["parts"] if t.strip()
+    ]
+    try:
+        parts = [
+            Tex(t, font_size=font).set_color(col or INK)
+            for t, col in sanitized
+        ]
+    except Exception as exc:
+        raise RuntimeError(
+            f"TeX equation failed to compile ({exc}). LaTeX toolchain status: "
+            f"install MiKTeX (winget install MiKTeX.MiKTeX), enable package "
+            f"auto-install, and clear ManimGL's tex disk cache "
+            f"(%LOCALAPPDATA%\\manim\\manim\\Cache) if it previously cached "
+            f"broken SVGs — then re-run."
+        ) from exc
+    return VGroup(*parts).arrange(RIGHT, buff=c.get("buff", 0.07))
 
 
 def make_title_component(spec: Component, **_) -> Component:

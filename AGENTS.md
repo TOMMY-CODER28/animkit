@@ -48,11 +48,12 @@ outputs, errors, error_excerpt, next_actions). Exit codes: 0 ok · 1 failure ·
    If the request is too thin to pin down content, DRAFT a script for approval
    first (mark every inferred choice) before writing scene code.
    See `skill/references/scripts.md`.
-4. **This build's API traps** (ManimGL 1.7.2-dev, LaTeX absent):
+4. **This build's API traps** (ManimGL 1.7.2-dev):
    `ShowCreation` not `Create` · `mob.animate.method()` not `play(mob.method, x)` ·
    pass `stroke_color=`/`fill_color=` explicitly (`color=` is overridden by
-   shape defaults) · no `Tex`/`MathTex`/`get_axis_labels()` — use `Text` with
-   Unicode math · `Axes` has `.get_height()` not `.height`.
+   shape defaults) · Unicode `Text` by default; LaTeX only via spec equations
+   with `"mode": "tex"` (never split `\left…ight` across parts; `animkit.cmd
+   check` verifies the TeX toolchain) · `Axes` has `.get_height()` not `.height`.
 5. **Every number shown on screen is computed in the scene file** (numpy, with
    `assert`s) — never hand-typed results.
 6. Paths contain no spaces in this repo, but quote them anyway; the launchers

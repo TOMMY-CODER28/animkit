@@ -12,6 +12,31 @@ from pathlib import Path
 from animkit import env
 
 
+def _latex_smoke():
+    """Compile one glyph through latex+dvisvgm in a subprocess. True = healthy,
+    False = broken toolchain (e.g. dvisvgm emitting empty glyph defs), None =
+    could not test."""
+    import subprocess
+    import sys
+    code = (
+        "import os\n"
+        "os.environ['PATH'] = r'{path}' + os.pathsep + os.environ['PATH']\n"
+        "from manimlib.utils.tex_file_writing import latex_to_svg\n"
+        "svg = latex_to_svg('0', show_message_during_execution=False)\n"
+        "print('BAD' if '<defs/>' in svg else 'OK')\n"
+    )
+    try:
+        tex_env = env.latex_path_env()
+        proc = subprocess.run(
+            [sys.executable, "-c", code.format(path=tex_env.get("PATH", ""))],
+            capture_output=True, text=True, timeout=180, env=tex_env,
+            encoding="utf-8", errors="replace",
+        )
+        return "OK" in (proc.stdout or "")
+    except Exception:
+        return None
+
+
 def _smoke_render() -> tuple[bool, list[str]]:
     scene = (
         "from manimlib import *\n\n"
@@ -73,8 +98,14 @@ def run(args) -> tuple[int, dict]:
             blockers.append(f"{label} not importable")
             next_actions.append(f"Run: <manim-venv-python> -m pip install {'av' if module == 'av' else 'pillow'}")
     if not latex["latex"]:
-        warnings.append("LaTeX not found: Tex/MathTex and axes.get_axis_labels() are UNAVAILABLE; use Text with Unicode math")
-        next_actions.append("Optional: install MiKTeX to enable LaTeX typesetting")
+        warnings.append("LaTeX not found: Tex is UNAVAILABLE; equations fall back to Unicode text")
+        next_actions.append("Optional: winget install MiKTeX.MiKTeX, then `animkit check` re-detects it")
+    else:
+        ok_tex = _latex_smoke()
+        if ok_tex is True:
+            pass
+        elif ok_tex is False:
+            blockers.append("LaTeX found but a test Tex compile failed — see warnings; Tex scenes will crash until fixed")
     if env.has_module("imageio_ffmpeg") and ff_source.startswith("imageio"):
         pass  # expected on this machine
     elif ff_source == "PATH":

@@ -132,10 +132,44 @@ def has_module(name: str) -> bool:
 
 
 def latex_status() -> dict:
+    bin_dir = find_latex()
     return {
-        "latex": shutil.which("latex") is not None,
-        "dvisvgm": shutil.which("dvisvgm") is not None,
+        "latex": bin_dir is not None,
+        "dvisvgm": bin_dir is not None,
+        "bin_dir": str(bin_dir) if bin_dir else None,
     }
+
+
+def find_latex() -> Path | None:
+    """Locate a TeX toolchain (latex + dvisvgm) ManimGL's Tex can shell to.
+
+    Order: PATH · ANIMKIT_TEX env var · user-scope MiKTeX · system MiKTeX ·
+    TeX Live. Returns the bin directory or None.
+    """
+    if shutil.which("latex") and shutil.which("dvisvgm"):
+        return Path(shutil.which("latex")).parent
+    env_dir = os.environ.get("ANIMKIT_TEX")
+    if env_dir and (Path(env_dir) / "latex.exe").is_file():
+        return Path(env_dir)
+    candidates = [
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "MiKTeX" / "miktex" / "bin" / "x64",
+        Path("C:/Program Files/MiKTeX/miktex/bin/x64"),
+        Path("C:/texlive") / "2024" / "bin" / "windows",
+    ]
+    for c in candidates:
+        if (c / "latex.exe").is_file() and (c / "dvisvgm.exe").is_file():
+            return c
+    return None
+
+
+def latex_path_env(base_env: dict | None = None) -> dict:
+    """Env dict with the TeX bin dir prepended to PATH (for manimgl
+    subprocesses and in-process Tex construction). No-op when absent."""
+    env = dict(base_env if base_env is not None else os.environ)
+    tex = find_latex()
+    if tex and str(tex) not in env.get("PATH", ""):
+        env["PATH"] = str(tex) + os.pathsep + env.get("PATH", "")
+    return env
 
 
 def env_snapshot(manimgl_exe: Path | None, source: str) -> dict:

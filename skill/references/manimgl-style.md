@@ -33,10 +33,22 @@ class MyScene(Scene):                             # name must match project.json
 3. **`Circle` pins `stroke_color=RED`** (and other shapes pin their own
    defaults), silently overriding a generic `color=` kwarg. Always pass
    `stroke_color=` / `fill_color=`, or call `.set_stroke()/.set_fill()`.
-4. **No LaTeX on this machine**: `Tex`/`MathTex` will crash at render.
-   `Axes.get_axis_labels()` also uses `Tex` internally — use the theme's
-   `axis_label()` instead. Math via Unicode in `math_text()`: π √ ² ³ ≤ ≥ · ×
-   î ĵ ẕ ∑ ∫ ≈ → ± ∞ and subscript/superscript chars.
+4. **LaTeX is opt-in and has traps.** `Tex` works when a TeX toolchain is
+   installed (animkit finds user-scope MiKTeX automatically; `animkit check`
+   verifies it compiles). Three verified traps in this build:
+   (a) an unmatched `\left`/`ight` makes latex FAIL, and ManimGL then
+   silently returns the PREVIOUS compile's SVG (wrong geometry, no error) —
+   never split `\left...ight` across strings; animkit's tex-equation
+   components strip them per part;
+   (b) `tex_to_color_map` can return a previously-compiled mobject (observed:
+   a second formula came back with the first formula's geometry) — color by
+   building one `Tex` per colored fragment and arranging them (what animkit's
+   `mode: "tex"` does);
+   (c) failed compiles can poison ManimGL's tex disk cache — if equations
+   render as wrong/garbled shapes, clear
+   `%LOCALAPPDATA%\manim\manim\Cache` and re-render.
+   Default remains Unicode `math_text()` for consistency; use `mode: "tex"`
+   when you need real typesetting (fractions, integrals, radical layout).
 5. **`Axes` has no `.height`/`.width` attributes** — use `.get_height()` /
    `.get_width()`.
 6. **`get_graph_by_values` doesn't exist** — build plots with

@@ -7,6 +7,7 @@ ANIMKIT_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ -n "$ANIMKIT_PYTHON" ]; then PY="$ANIMKIT_PYTHON"
 elif command -v animkit >/dev/null 2>&1; then exec animkit "$@"
+elif [ -f "$ANIMKIT_HOME/../manim/.venv/bin/python" ]; then PY="$ANIMKIT_HOME/../manim/.venv/bin/python"
 elif [ -f "$ANIMKIT_HOME/../.venv/bin/python" ]; then PY="$ANIMKIT_HOME/../.venv/bin/python"
 elif [ -f "$ANIMKIT_HOME/.venv/bin/python" ]; then PY="$ANIMKIT_HOME/.venv/bin/python"
 elif [ -f "$ANIMKIT_HOME/manim/.venv/bin/python" ]; then PY="$ANIMKIT_HOME/manim/.venv/bin/python"

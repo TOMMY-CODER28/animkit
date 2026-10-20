@@ -55,6 +55,20 @@ class SpecScene(Scene):
         aspect = self.spec.aspect
         self.frame_box = Box(0, 0, FRAME_HEIGHT * aspect, FRAME_HEIGHT)
         self._prev_positions: dict[str, tuple[float, float]] = {}
+        self._prewarm_tex()
+
+    def _prewarm_tex(self):
+        """Compile every TeX equation BEFORE the first frame. manimlib caches
+        compiled TeX by hash, so later builds are instant; without this, the
+        compile stall lands mid-construct, the movie writer turns it into
+        seconds of frozen video, and late stages get truncated."""
+        from animkit.layout.components import MAKERS
+        for cid, cs in self.spec.components.items():
+            if cs.ctype == "equation" and cs.content.get("mode") == "tex":
+                try:
+                    MAKERS["equation"](cs)
+                except Exception as exc:
+                    raise RuntimeError(f"TeX component {cid!r} failed to compile: {exc}") from exc
 
     # -- helpers -------------------------------------------------------------
     def wait(self, t: float = 1.0):

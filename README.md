@@ -11,7 +11,10 @@ inspection → (bounded revision) → final render → packaged delivery
 
 ## Install (from a clone)
 
-Requires Python ≥ 3.10 and a GPU with wgpu support. No LaTeX needed.
+Requires Python ≥ 3.10 and a GPU with wgpu support. LaTeX is optional
+(MiKTeX auto-detected when installed: `winget install MiKTeX.MiKTeX`, then
+in MiKTeX Console enable package auto-install — scenes only need it if they
+use `"mode": "tex"` equations; Unicode-math scenes never touch it).
 
 ```bash
 git clone https://github.com/<you>/animkit.git && cd animkit
@@ -218,4 +221,4 @@ frames pixel-checked with zero issues.
 **Deferred by design**: Graphviz/Penrose backends (interface ready, no
 concrete need yet), 3D layout (2D composition only; 3D/camera untouched),
 resize-and-retry loop (try_fit exists, unused by templates yet), MCP wrapper,
-voiceover/subtitles, LaTeX (still absent on this machine).
+voiceover/subtitles.

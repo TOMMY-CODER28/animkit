@@ -1,0 +1,24 @@
+{
+  "name": "tex-demo",
+  "scene": "TexDemo",
+  "scene_file": "scene.py",
+  "output": {
+    "video_dir": "media",
+    "preview_resolution": [854, 480],
+    "preview_fps": 15,
+    "preview_crf": 23,
+    "final_resolution": [1920, 1080],
+    "final_fps": 60,
+    "final_crf": 18
+  },
+  "timing": {
+    "preview_timeout_s": 900,
+    "render_timeout_s": 5400,
+    "frames_timeout_s": 180
+  },
+  "environment": {
+    "manimgl": "auto"
+  },
+  "background_color": "",
+  "notes": "Created by animkit new. background_color: '#RRGGBB' or '' for ManimGL default (#333333)."
+}

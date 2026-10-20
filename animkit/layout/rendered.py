@@ -30,12 +30,18 @@ BG = np.array([51, 51, 51])  # ManimGL default #333333
 # ---------------------------------------------------------------- frames -----
 def extract_frames(video: str | Path, times: list[float], out_dir: str | Path,
                    prefix: str = "frame") -> list[dict]:
-    """Extract frames at the given absolute seconds via PyAV."""
+    """Extract frames at the given absolute seconds via PyAV.
+
+    Presentation timestamps are normalised to the stream's start_time: some
+    encoders (ManimGL's ffmpeg pipe) emit mp4s whose first pts is > 0, and
+    comparing raw pts against wall-clock targets shifts every extraction
+    by that offset (observed: ~2.7 s) — making late stages look missing."""
     import av
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     container = av.open(str(video))
     stream = container.streams.video[0]
+    start = float(stream.start_time or 0) * stream.time_base
     duration = float(container.duration) / 1e6
     made = []
     want = sorted(t for t in times if 0 <= t <= duration)
@@ -44,7 +50,7 @@ def extract_frames(video: str | Path, times: list[float], out_dir: str | Path,
     for frame in container.decode(video=0):
         if target is None:
             break
-        t = float(frame.pts * frame.time_base)
+        t = float(frame.pts * frame.time_base) - start
         if t >= target - 1e-6:
             path = out_dir / f"{prefix}_t{target:06.2f}s.png"
             frame.to_image().save(path)

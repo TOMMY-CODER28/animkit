@@ -54,8 +54,12 @@ Don't jump to code — **draft `script.md` and get it approved**:
 - **Preferred authoring: a SceneSpec** — you declare content + relationships;
   the built-in layout engine computes coordinates, manages object lifecycles,
   and validates geometry. No hand-placed positions.
-- **No LaTeX exists on this machine.** All math is Unicode text (π √ ² ᵀ ′ ⊙ μ
-  σ γ β Σ ≈ →) rendered with Pango fonts (Segoe UI / Cambria Math).
+- **Equations**: Unicode text (π √ ² ᵀ ′ ⊙ μ σ γ β) is the default. Real
+  LaTeX is opt-in: in an equation component set `"mode": "tex"` and write
+  each part as a TeX fragment (colors apply per part). Requires the MiKTeX
+  toolchain on the machine — `animkit.cmd check` reports whether it's
+  available; if absent, fall back to Unicode. Never split `\left…ight`
+  across parts.
 
 ## Chat-mode deliverables (produce these, in this order)
 

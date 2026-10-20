@@ -77,8 +77,10 @@ outputs, errors, error_excerpt, next_actions). Exit codes: 0 ok, 1 failure,
 
 ## Hard rules
 
-- **No LaTeX**: this machine has no TeX. Use `Text` + Unicode (π, √, ², subscripts)
-  via the theme's `text()` / `math_text()`. Never `Tex`, `MathTex`, `get_axis_labels()`.
+- **Equations**: Unicode `Text` via the theme's `text()` / `math_text()` is the
+  default. Real LaTeX is available opt-in: equation components with
+  `content: {"mode": "tex"}` compile through MiKTeX (animkit puts it on PATH).
+  Never mix `\left`/`ight` across parts (see references/manimgl-style.md).
 - **Colors**: pass `stroke_color=`/`fill_color=` explicitly (or use `.set_stroke()/
   .set_fill()`); generic `color=` is overridden by shape defaults on this build.
 - **Theme**: import from `theme.py` (`from theme import *`) — palette, type scale,
@@ -106,7 +108,8 @@ outputs, errors, error_excerpt, next_actions). Exit codes: 0 ok, 1 failure,
 | `references/troubleshooting.md` | render failures, environment problems, error → fix table |
 | `references/delivery.md` | packaging, modifying existing animations, connecting other agents |
 
-Environment facts (verified 2026-10-17): ManimGL v1.7.2 at
+Environment facts (reference machine, verified 2026-10-21): ManimGL v1.7.2 at
 `<manim-venv>` (Python 3.10.9, wgpu GPU renderer, headless via
-`-w`); ffmpeg from `imageio-ffmpeg` inside that venv; no LaTeX; fonts: Segoe UI /
+`-w`); ffmpeg from `imageio-ffmpeg` inside that venv; MiKTeX user-install for LaTeX
+(discovered automatically; `ANIMKIT_TEX` overrides); fonts: Segoe UI /
 Cambria Math available. Re-verify with `animkit.cmd check` if things moved.
