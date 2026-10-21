@@ -21,3 +21,4 @@ Thumbs.db
 .local_path_tokens
 latex_cache/
 examples/*/deliverables/*/REPRODUCE.md
+examples/*/deliverables/*/audio/
