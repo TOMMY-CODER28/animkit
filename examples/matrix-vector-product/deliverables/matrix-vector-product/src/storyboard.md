@@ -18,3 +18,11 @@ Planned checks
   calc "= 3"), stage 3 (row-1 highlight + calc "= 2"), stage 4 (operands +
   result [3, 2], label A·v)
 - Numbers vs numpy asserts; narration sync (stage ≥ narration)
+
+**Actual (final):** 47.82 s, 1080p60, narrated (h264 + AAC). All four stages
+frame-verified faithful to the script: values, highlights (row + v column),
+verbatim calc lines, operands-result layout, A·v label. Sync: every stage
+outlasts its narration (+0.8 s pad + scripted hold). Script's own holds
+(1/2/2/2) + narration ≈ 37 s < the stated 45–60 s target; resolved with
+logged assumptions #4 (speed 0.9, pad 0.8 s) and additive post-narration
+holds — duration now inside target without changing content.

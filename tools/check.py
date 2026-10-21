@@ -20,6 +20,7 @@ import datetime
 import json
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -68,21 +69,44 @@ def main() -> int:
     log_dir = REPO / "logs" / stamp
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    results = []
-    for check in checks:
-        print(f"[check] {check} ... ", end="", flush=True)
-        try:
-            res = run_check(check, log_dir)
-        except subprocess.TimeoutExpired:
-            res = {"check": check, "passed": False, "exit_code": -1,
-                   "log": str(log_dir / f"{check}.timeout"),
-                   "summary": f"TIMEOUT after {1800}s"}
-            (log_dir / f"{check}.timeout").write_text("timeout")
-        print("PASS" if res["passed"] else "FAIL",
-              f"({res['exit_code']})  {res['summary']}")
-        results.append(res)
+    print(f"[runner] {len(checks)} checks in parallel; logs: {log_dir}")
+    with ThreadPoolExecutor(max_workers=len(checks)) as pool:
+        futures = {pool.submit(run_check, check, log_dir): check
+                   for check in checks}
+        results = []
+        for fut in futures:  # report in submission (deterministic) order
+            try:
+                res = fut.result()
+            except subprocess.TimeoutExpired:
+                check = futures[fut]
+                res = {"check": check, "passed": False, "exit_code": -1,
+                       "log": str(log_dir / f"{check}.timeout"),
+                       "skipped": 0,
+                       "summary": f"TIMEOUT after {1800}s"}
+                (log_dir / f"{check}.timeout").write_text("timeout")
+            print(f"[check] {res['check']} ... "
+                  + ("PASS" if res["passed"] else "FAIL")
+                  + f" ({res['exit_code']})  {res['summary']}")
+            results.append(res)
 
     failed = [r for r in results if not r["passed"]]
+    try:
+        rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                             cwd=str(REPO), capture_output=True, text=True,
+                             timeout=15).stdout.strip()
+    except Exception:
+        rev = "unknown"
+    evidence = {
+        "ok": not failed, "when": stamp, "revision": rev,
+        "set": "fast" if args.fast else "full",
+        "checks": [{"check": r["check"], "passed": r["passed"],
+                    "exit_code": r["exit_code"],
+                    "skipped": r.get("skipped", 0)} for r in results],
+    }
+    # tracked evidence travels with commits (small, machine-neutral)
+    checks_dir = REPO / "checks"
+    checks_dir.mkdir(exist_ok=True)
+    (checks_dir / "latest.json").write_text(json.dumps(evidence, indent=2))
     last = {"ok": not failed, "when": stamp,
             "passed": [r["check"] for r in results if r["passed"]],
             "failed": [{"check": r["check"], "exit_code": r["exit_code"],

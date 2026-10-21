@@ -1,0 +1,26 @@
+{
+  "ok": false,
+  "when": "20261021-170839",
+  "revision": "17d09eb",
+  "set": "fast",
+  "checks": [
+    {
+      "check": "test_audio.py",
+      "passed": true,
+      "exit_code": 0,
+      "skipped": 0
+    },
+    {
+      "check": "test_layout.py",
+      "passed": true,
+      "exit_code": 0,
+      "skipped": 0
+    },
+    {
+      "check": "test_no_local_paths.py",
+      "passed": false,
+      "exit_code": 1,
+      "skipped": 0
+    }
+  ]
+}

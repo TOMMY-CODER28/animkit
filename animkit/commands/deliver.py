@@ -84,22 +84,30 @@ def run(args) -> tuple[int, dict]:
 
     manimgl, gl_source = env.find_manimgl(project.manimgl_setting())
     snapshot = env.env_snapshot(manimgl, gl_source)
-    from animkit.env import animkit_root
-    launcher = animkit_root() / "animkit.cmd"
+    # machine-neutral on purpose: REPRODUCE.md is committed, so it must not
+    # embed authoring-machine paths — versions + relative commands only
+    import subprocess as _sp
+    try:
+        rev = _sp.run(["git", "rev-parse", "--short", "HEAD"],
+                      cwd=str(project.root), capture_output=True, text=True,
+                      timeout=15).stdout.strip()
+    except Exception:
+        rev = "unknown"
     reproduce = (
         f"# Reproducing \"{project.name}\"\n\n"
-        f"Packaged: {datetime.datetime.now().isoformat(timespec='seconds')}\n\n"
+        f"Packaged: {datetime.datetime.now().isoformat(timespec='seconds')} "
+        f"(source revision {rev or 'unknown'})\n\n"
         f"## Environment\n"
-        f"- ManimGL {snapshot['manimgl_version']} at `{snapshot['manimgl_path']}`\n"
-        f"- Python {snapshot['python']} (`{snapshot['python_exe']}`)\n"
-        f"- ffmpeg: `{snapshot['ffmpeg_path']}` ({snapshot['ffmpeg_source']})\n"
+        f"- ManimGL {snapshot['manimgl_version'] or 'run animkit check'} "
+        f"(3b1b edition, in its own venv)\n"
+        f"- Python {snapshot['python']}\n"
+        f"- ffmpeg: {snapshot['ffmpeg_source'] or 'imageio-ffmpeg in the venv'}\n"
         f"- animkit {snapshot['animkit_version']}\n"
-        f"- No LaTeX required by this animation\n\n"
-        f"## Commands (Windows, any shell; quotes needed if paths contain spaces)\n\n"
+        f"- LaTeX: not required by this animation\n\n"
+        f"## Commands (from a clone of the animkit repo; run `animkit check` first)\n\n"
         f"```\n"
-        f"cd \"{project.root}\"\n"
-        f"\"{launcher}\" validate .\n"
-        f"\"{launcher}\" render .\n"
+        f"animkit validate examples/{project.name}\n"
+        f"animkit render examples/{project.name}\n"
         f"```\n\n"
         f"## Source hashes at delivery\n"
         + "\n".join(f"- {k}: {v}" for k, v in project.hashes().items()) + "\n"

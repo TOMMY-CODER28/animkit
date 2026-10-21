@@ -20,7 +20,6 @@ Thumbs.db
 .DS_Store
 .local_path_tokens
 latex_cache/
-examples/*/deliverables/*/REPRODUCE.md
-examples/*/deliverables/*/audio/
+examples/*/deliverables/*/audio/*.wav
 logs/
 .check_failures
