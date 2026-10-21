@@ -55,7 +55,34 @@ class SpecScene(Scene):
         aspect = self.spec.aspect
         self.frame_box = Box(0, 0, FRAME_HEIGHT * aspect, FRAME_HEIGHT)
         self._prev_positions: dict[str, tuple[float, float]] = {}
+        self.audio_durations: dict[str, float] = {}
         self._prewarm_tex()
+        self._load_audio_manifest()
+
+    def _load_audio_manifest(self):
+        """Narration durations (written by `animkit audio`) extend each
+        stage's hold so the video never outpaces the speech. Active only when
+        the spec enables audio AND a manifest exists next to the media dir."""
+        if not self.spec.audio:
+            return
+        import json
+        base = Path(getattr(self.spec, "output_dir", None) or ".")
+        manifest = base / "audio" / "audio_manifest.json"
+        if not manifest.is_file():
+            self.warnings.append(
+                "spec.audio is enabled but no audio manifest found — run "
+                "`animkit audio <project>` before rendering; holding unchanged")
+            return
+        data = json.loads(manifest.read_text())
+        self.audio_durations = {k: float(v["duration_s"])
+                                for k, v in data.get("stages", {}).items()}
+        missing = [s.id for s in self.spec.stages
+                   if getattr(s, "narration", None)
+                   and s.id not in self.audio_durations]
+        if missing:
+            self.warnings.append(
+                f"no narration audio for stages {missing} — they keep their "
+                f"spec hold times")
 
     def _prewarm_tex(self):
         """Compile every TeX equation BEFORE the first frame. manimlib caches
@@ -195,6 +222,18 @@ class SpecScene(Scene):
             self.add(cap_comp.group)
 
         hold = timings["hold"]
+        # narration sync: extend this stage's hold so the stage lasts at least
+        # as long as its narration audio (+pad). Audio is generated BEFORE the
+        # render (animkit audio) — this only reads measured durations.
+        audio_pad = float((self.spec.audio or {}).get("pad", 0.35))
+        if stage.id in self.audio_durations:
+            elapsed = self._t - t0
+            needed = self.audio_durations[stage.id] + audio_pad
+            if needed > elapsed + hold:
+                self.warnings.append(
+                    f"stage {stage.id}: hold extended by "
+                    f"{needed - elapsed - hold:.2f}s to fit narration")
+                hold += needed - elapsed - hold
         if hold:
             self.wait(hold)
 

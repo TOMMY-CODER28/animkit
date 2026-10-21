@@ -12,6 +12,7 @@ license = { text = "MIT" }
 dependencies = []  # stdlib-only core; manimlib/av/Pillow/kiwisolver come from the ManimGL venv at runtime
 
 [project.optional-dependencies]
+audio = ["kokoro>=0.9.4", "soundfile>=0.12.1"]
 dev = ["pytest"]
 
 [project.scripts]

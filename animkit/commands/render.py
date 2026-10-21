@@ -121,6 +121,14 @@ def render_video(project: Project, mode: str, run: Run, scene_override: str | No
         })
     else:
         meta = _probe_video(expected)
+        # narrated delivery: when the spec/project enables audio, mux the
+        # per-stage narration track (aligned to stage start times) into the mp4
+        narrated = _mux_if_audio(project, expected, run)
+        if narrated:
+            if narrated.get("ok"):
+                meta["narrated_video"] = narrated["outputs"]["narrated_video"]
+            else:
+                result.setdefault("warnings", []).extend(narrated.get("errors", []))
         result.update({
             "ok": True, "status": "success",
             "outputs": {"video": str(expected)},
@@ -132,6 +140,59 @@ def render_video(project: Project, mode: str, run: Run, scene_override: str | No
             ),
         })
     return result
+
+
+def _ensure_audio(project) -> dict | None:
+    """Narration preflight for spec scenes with audio enabled. Generates
+    missing WAVs before rendering; returns a result dict or None (no audio)."""
+    import json
+    pj = project.root / "project.json"
+    cfg = json.loads(pj.read_text(encoding="utf-8")) if pj.is_file() else {}
+    audio_cfg = cfg.get("audio") or {}
+    if not audio_cfg.get("enabled"):
+        return None
+    from animkit.commands.audio import _load_spec
+    from animkit.audio import generate_project_audio
+    spec = _load_spec(project.scene_file)
+    if not any(getattr(s, "narration", None) for s in spec.stages):
+        return None
+    merged = {**(spec.audio or {}), **audio_cfg}
+    out_dir = project.root / "media" / "audio"
+    manifest = out_dir / "audio_manifest.json"
+    if manifest.is_file():
+        covered = json.loads(manifest.read_text()).get("stages", {})
+        needed = [s.id for s in spec.stages if getattr(s, "narration", None)]
+        if all(n in covered for n in needed):
+            return {"ok": True, "cached": True}
+    return generate_project_audio(spec, out_dir=out_dir, config=merged,
+                                  force=audio_cfg.get("force", False))
+
+
+
+def _mux_if_audio(project, expected, run):
+    """Mux narration into the finished mp4 when audio is enabled."""
+    import json
+    pj = project.root / "project.json"
+    cfg = json.loads(pj.read_text(encoding="utf-8")) if pj.is_file() else {}
+    if not (cfg.get("audio") or {}).get("enabled"):
+        return None
+    audio_dir = project.root / "media" / "audio"
+    manifest_p = audio_dir / "audio_manifest.json"
+    times_p = project.root / "media" / "stage_times.json"
+    if not (manifest_p.is_file() and times_p.is_file()):
+        return None
+    from animkit.audio import build_narration_track, mux_narration
+    from animkit import env as ak_env
+    manifest = json.loads(manifest_p.read_text()).get("stages", {})
+    stage_times = json.loads(times_p.read_text())
+    ffmpeg, _ = ak_env.find_ffmpeg(None)
+    if not ffmpeg:
+        return {"ok": False, "errors": ["no ffmpeg for narration mux"],
+                "next_actions": ["pip install imageio-ffmpeg into the venv"]}
+    track = build_narration_track(stage_times, manifest, audio_dir,
+                                  ffmpeg_exe=str(ffmpeg))
+    run.log_line(f"[animkit] narration track: {track}")
+    return mux_narration(str(expected), track["path"], str(ffmpeg))
 
 
 def _probe_video(path: Path) -> dict | None:
@@ -161,6 +222,27 @@ def run(args) -> tuple[int, dict]:
             "errors": errors,
             "next_actions": ["Fix project.json / missing files, or recreate with `animkit new`"],
         }
+
+    # narration preflight: if the spec enables audio, speech must exist before
+    # the video renders (holds extend to fit measured durations).
+    audio_note = None
+    try:
+        audio_note = _ensure_audio(project)
+        if audio_note and not audio_note.get("ok"):
+            return 1, {
+                "ok": False, "status": "failure", "command": args.mode,
+                "project": project.name,
+                "errors": ["narration generation failed before rendering: "
+                           + "; ".join(audio_note.get("errors", []))],
+                "next_actions": audio_note.get("next_actions", []),
+            }
+    except Exception as exc:
+        return 1, {"ok": False, "status": "failure", "command": args.mode,
+                   "project": project.name,
+                   "errors": [f"narration preflight error: {exc}"],
+                   "next_actions": ["run `animkit audio <project>` manually "
+                                    "for the detailed error"]}
+
     mode = args.mode
     run = Run(project.root, mode)
     try:

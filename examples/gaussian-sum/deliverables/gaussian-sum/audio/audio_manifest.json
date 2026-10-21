@@ -1,0 +1,38 @@
+{
+  "config": {
+    "voice": "af_heart",
+    "speed": 1.0,
+    "lang": "a",
+    "pad": 0.35
+  },
+  "stages": {
+    "claim": {
+      "path": "C:\\Users\\Deshpande\\animkit\\examples\\gaussian-sum\\media\\audio\\claim-93a5ddd149802cc0.wav",
+      "sample_rate": 24000,
+      "duration_s": 4.6,
+      "cached": true,
+      "chunks": 0
+    },
+    "pair": {
+      "path": "C:\\Users\\Deshpande\\animkit\\examples\\gaussian-sum\\media\\audio\\pair-a9445036e59285bd.wav",
+      "sample_rate": 24000,
+      "duration_s": 4.975,
+      "cached": true,
+      "chunks": 0
+    },
+    "count": {
+      "path": "C:\\Users\\Deshpande\\animkit\\examples\\gaussian-sum\\media\\audio\\count-69cbe26ab8d3929d.wav",
+      "sample_rate": 24000,
+      "duration_s": 4.75,
+      "cached": true,
+      "chunks": 0
+    },
+    "formula": {
+      "path": "C:\\Users\\Deshpande\\animkit\\examples\\gaussian-sum\\media\\audio\\formula-6f5ce1f0026a951b.wav",
+      "sample_rate": 24000,
+      "duration_s": 7.575,
+      "cached": false,
+      "chunks": 1
+    }
+  }
+}

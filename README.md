@@ -41,6 +41,7 @@ an existing installation at runtime and drives it headlessly.
 | `render` | final 1920×1080 @ 60 fps |
 | `report` | runs, outputs, current state, next actions |
 | `deliver` | package video + source + frames + REPRODUCE.md |
+| `audio` | generate stage narration WAVs (Kokoro TTS) + duration manifest |
 
 Every command accepts `--json` (before the subcommand) and returns
 `{ok, status, outputs, errors, error_excerpt, next_actions}`. Exit codes:
@@ -92,7 +93,18 @@ file for chat-only models, defining a chat-mode contract (the model authors;
 you render). A script-first workflow makes *your* script the source of truth,
 and thin requests get a drafted script for approval before any code.
 
-**A8. Examples** (all committed with sources and deliverable videos):
+**A8. Narration (TTS).** Stages can declare spoken narration
+(`narration=` on a StageSpec — the script-first `Say:` lines). The Kokoro
+provider (hexgrad/Kokoro-82M, English `a` / British `b`, configurable voice
+and speed) loads the pipeline once per process, synthesizes chunks in order
+(never overwriting earlier chunk files), combines them into one WAV per
+stage, measures duration, and caches by content hash. `animkit audio`
+generates everything up front; preview/render extend each stage's hold to fit
+its measured narration (+0.35 s pad), so the video never outpaces the speech.
+Enable per project (`"audio": {"enabled": true}` in project.json) or per spec
+(`spec.audio = {...}`).
+
+**A9. Examples** (all committed with sources and deliverable videos):
 `equal-area-shapes` (labels/timing), `linear-transform-2d` (verified matrix
 landings), `signal-pipeline` (real numpy FFT), `transformer-attention` v1 vs
 `transformer-attention-v2` (the spec rewrite that fixed five real alignment /
@@ -185,7 +197,18 @@ animkit check --smoke
 *Check:* `[ok]` — this compiled a scene through GPU → ffmpeg → mp4. If it
 passes, everything above it works.
 
-**B11. (Optional) Run the test suites.**
+**B11. (Optional) Narration / TTS.** Requires the audio extra plus eSpeak NG
+(English G2P fallback; first generation downloads the Kokoro-82M model,
+~330 MB, from Hugging Face):
+
+```bat
+..\manim\.venv\Scripts\pip install -e .[audio]
+winget install eSpeak-NG.eSpeak-NG
+```
+*Check:* `python -c "import kokoro, soundfile"` inside the venv prints
+nothing, and `espeak-ng --version` resolves on PATH (new shell).
+
+**B12. (Optional) Run the test suites.**
 
 ```bat
 ..\manim\.venv\Scripts\python tests\test_cli.py
@@ -242,7 +265,18 @@ Reports (`layout_report.json`, `stage_times.json`) sit in `media\`.
 **C6. Revise** scene.py → repeat C3–C5. Bounded: stop after 3 cycles;
 deliver the best state with honest notes.
 
-**C7. Final render + package.**
+**C7. (Optional) Narrate + render.** With narration declared on stages
+(`narration=`) and audio enabled, generate speech before rendering:
+
+```bat
+animkit audio examples\my-first [--voice af_heart --speed 1.0]
+animkit render  examples\my-first
+```
+`render` re-generates missing WAVs automatically when
+`project.json` has `"audio": {"enabled": true}`; stage holds extend to fit
+the measured narration. WAVs + manifest ship in the deliverable.
+
+**C8. Final render + package.**
 
 ```bat
 animkit render  examples\my-first
@@ -334,6 +368,15 @@ the stage caption, split the stage, or `density: "compact"`.
 
 **G8. Late video stages look missing in extracted frames** → fixed in
 `extract_frames` (pts normalisation); if it recurs, sample by ink density.
+
+**G9. TTS: words mispronounced / phonemizer errors** → install eSpeak NG
+(`winget install eSpeak-NG.eSpeak-NG`) and open a new shell — Kokoro's English
+G2P falls back to it. First generation also downloads the Kokoro-82M model;
+offline machines cannot generate.
+
+**G10. `audio` reports provider unavailable** → the audio extra is missing
+from the venv: `pip install -e .[audio]` (pulls `kokoro` + `soundfile`;
+torch is CPU by default).
 
 ---
 

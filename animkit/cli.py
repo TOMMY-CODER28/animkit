@@ -30,6 +30,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("check-layout", help="dry-run a spec-driven scene: validate + solve + geometry-check, no render")
     p.add_argument("project", nargs="?", default=".", help="project directory (default: .)")
 
+    p = sub.add_parser("audio", help="generate stage narration WAVs (Kokoro TTS) + manifest")
+    p.add_argument("project", nargs="?", default=".", help="project directory (default: .)")
+    p.add_argument("--voice", help="Kokoro voice (default: spec.audio.voice or af_heart)")
+    p.add_argument("--speed", type=float, help="speech speed multiplier (default 1.0)")
+    p.add_argument("--lang", help="language code: 'a' American English, 'b' British, ...")
+    p.add_argument("--force", action="store_true", help="regenerate even if cached")
+
     p = sub.add_parser("new", help="create a project from template")
     p.add_argument("name", help="project name, e.g. 'fourier-intro'")
     p.add_argument("--dir", default=".", help="parent directory for the new project (default: .)")
@@ -100,6 +107,9 @@ def main(argv=None) -> int:
     elif args.command == "check-layout":
         from animkit.commands import check_layout
         code, result = check_layout.run(args)
+    elif args.command == "audio":
+        from animkit.commands import audio
+        code, result = audio.run(args)
     elif args.command == "new":
         from animkit.commands import new
         code, result = new.run(args)

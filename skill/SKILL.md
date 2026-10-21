@@ -80,7 +80,8 @@ outputs, errors, error_excerpt, next_actions). Exit codes: 0 ok, 1 failure,
 - **Equations**: Unicode `Text` via the theme's `text()` / `math_text()` is the
   default. Real LaTeX is available opt-in: equation components with
   `content: {"mode": "tex"}` compile through MiKTeX (animkit puts it on PATH).
-  Never mix `\left`/`ight` across parts (see references/manimgl-style.md).
+  Never mix `\left`/`
+ight` across parts (see references/manimgl-style.md).
 - **Colors**: pass `stroke_color=`/`fill_color=` explicitly (or use `.set_stroke()/
   .set_fill()`); generic `color=` is overridden by shape defaults on this build.
 - **Theme**: import from `theme.py` (`from theme import *`) — palette, type scale,
@@ -100,6 +101,7 @@ outputs, errors, error_excerpt, next_actions). Exit codes: 0 ok, 1 failure,
 |------|-----------|
 | `references/briefs.md` | turning a vague request into a brief; when to ask vs assume |
 | `references/scripts.md` | the user wrote (or wants) a **script** — animate it faithfully, or draft one for approval when the request is too thin |
+| `animkit audio` (CLI) | stage `narration=` texts -> Kokoro TTS WAVs + manifest; preview/render sync holds to speech; needs the `audio` extra + eSpeak NG |
 | `references/spec-scenes.md` | **preferred**: spec-driven scenes — declare content + relationships, get solved, validated layouts (`animkit check-layout` dry-runs them) |
 | `references/manimgl-style.md` | hand-written scene code; **API differences of this build**; verified snippets |
 | `references/quality.md` | before approving preview frames (checklist + anti-patterns) |

@@ -4,10 +4,16 @@
   "scene_file": "scene.py",
   "output": {
     "video_dir": "media",
-    "preview_resolution": [854, 480],
+    "preview_resolution": [
+      854,
+      480
+    ],
     "preview_fps": 15,
     "preview_crf": 23,
-    "final_resolution": [1920, 1080],
+    "final_resolution": [
+      1920,
+      1080
+    ],
     "final_fps": 60,
     "final_crf": 18
   },
@@ -20,5 +26,11 @@
     "manimgl": "auto"
   },
   "background_color": "",
-  "notes": "Created by animkit new. background_color: '#RRGGBB' or '' for ManimGL default (#333333)."
+  "notes": "Created by animkit new. background_color: '#RRGGBB' or '' for ManimGL default (#333333).",
+  "audio": {
+    "enabled": true,
+    "voice": "af_heart",
+    "speed": 1.0,
+    "lang": "a"
+  }
 }

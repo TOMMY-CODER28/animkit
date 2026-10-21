@@ -26,6 +26,7 @@ animkit.cmd preview  examples\my-animation     :: 854x480 @15
 animkit.cmd frames   examples\my-animation     :: inspection PNGs + contact sheet
 animkit.cmd render   examples\my-animation     :: 1920x1080 @60
 animkit.cmd deliver  examples\my-animation     :: packaged video+src+REPRODUCE.md
+animkit.cmd audio    examples\my-animation     :: TTS narration (Kokoro) -> WAVs + manifest
 ```
 
 Add `--json` before any subcommand for machine-readable results (ok, status,
@@ -52,11 +53,16 @@ outputs, errors, error_excerpt, next_actions). Exit codes: 0 ok · 1 failure ·
    `ShowCreation` not `Create` · `mob.animate.method()` not `play(mob.method, x)` ·
    pass `stroke_color=`/`fill_color=` explicitly (`color=` is overridden by
    shape defaults) · Unicode `Text` by default; LaTeX only via spec equations
-   with `"mode": "tex"` (never split `\left…ight` across parts; `animkit.cmd
+   with `"mode": "tex"` (never split `\left…
+ight` across parts; `animkit.cmd
    check` verifies the TeX toolchain) · `Axes` has `.get_height()` not `.height`.
 5. **Every number shown on screen is computed in the scene file** (numpy, with
    `assert`s) — never hand-typed results.
-6. Paths contain no spaces in this repo, but quote them anyway; the launchers
+6. **Narration**: stages may declare `narration=` (spoken text). Generate
+   with `animkit audio <project>` BEFORE rendering; preview/render extend
+   holds to fit measured durations. Audio needs the optional extra
+   (`pip install -e .[audio]`) and eSpeak NG.
+7. Paths contain no spaces in this repo, but quote them anyway; the launchers
    (`animkit.cmd` / `animkit.sh`) route through the ManimGL venv at
    `<manim-venv>` — do not pip-install into it without need.
 

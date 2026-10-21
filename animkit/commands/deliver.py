@@ -62,7 +62,18 @@ def run(args) -> tuple[int, dict]:
 
     video_dest = dest / "video"
     video_dest.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(video, video_dest / (project.name + ".mp4"))
+    # prefer the narrated mux when one exists next to the plain render
+    narrated = video.with_name(video.stem + "_narrated.mp4")
+    final_video = narrated if narrated.is_file() else video
+    shutil.copy2(final_video, video_dest / (project.name + ".mp4"))
+    audio_dir = project.root / "media" / "audio"
+    if audio_dir.is_dir():
+        (dest / "audio").mkdir(parents=True, exist_ok=True)
+        for wav in audio_dir.glob("*.wav"):
+            shutil.copy2(wav, dest / "audio" / wav.name)
+        if (audio_dir / "audio_manifest.json").is_file():
+            shutil.copy2(audio_dir / "audio_manifest.json",
+                         dest / "audio" / "audio_manifest.json")
     for f in ("scene.py", "theme.py", "project.json", "brief.md", "storyboard.md"):
         p = project.root / f
         if p.is_file():

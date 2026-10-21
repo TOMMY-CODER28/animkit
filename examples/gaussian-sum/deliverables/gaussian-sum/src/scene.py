@@ -7,7 +7,15 @@ Render with:  animkit preview .   /   animkit render .
 
 import sys
 from pathlib import Path
-import animkit  # resolved via pip install -e . or ANIMKIT_ROOT
+try:
+    import animkit  # noqa: F401  (pip install -e <animkit>)
+except ImportError:
+    import os as _os
+    from pathlib import Path as _Path
+    _root = _os.environ.get("ANIMKIT_ROOT")
+    _anc = [a for a in _Path(__file__).resolve().parents
+            if (a / "animkit" / "layout").is_dir()]
+    sys.path.insert(0, _root or (str(_anc[0]) if _anc else ""))
 
 import numpy as np
 
@@ -39,7 +47,9 @@ def eq(cid, parts, font_size=30, region="main", owner=None, side="below"):
 
 def build_spec() -> SceneSpec:
     spec = SceneSpec(name="gaussian-sum", aspect=16 / 9, density="comfortable",
-                     output_dir=str(Path(__file__).parent / "media"))
+                     output_dir=str(Path(__file__).parent / "media"),
+                     audio={"voice": "af_heart", "speed": 1.0, "lang": "a",
+                            "pad": 0.35})
     spec.components = {
         "title": ComponentSpec(id="title", ctype="title",
                                content={"text": "The Gauss pairing trick"}),
@@ -74,34 +84,39 @@ def build_spec() -> SceneSpec:
             font_size=30, owner="formula"),
     }
 
-    def stage(sid, comps, trans, caption):
+    def stage(sid, comps, trans, caption, narration=None):
         return StageSpec(id=sid, template="single_center", components=comps,
-                         transition=trans, caption=caption,
+                         transition=trans, caption=caption, narration=narration,
                          timing={"enter": 0.9, "move": 1.0, "exit": 0.5, "hold": 1.3})
 
     spec.stages = [
         stage("claim",
               {"title": "persistent", "nav": "persistent", "claim": "entering"},
               {"title": "static", "nav": "static", "claim": "write"},
-              "how do you add the first hundred numbers?"),
+              "how do you add the first hundred numbers?",
+              narration="How do you add up the first hundred numbers, without adding them one by one?"),
         stage("pair",
               {"nav": "persistent", "claim": "leaving",
                "pairing": "entering", "pair_note": "entering"},
               {"nav": "static", "claim": "fade_in", "pairing": "fade_in",
                "pair_note": "fade_in"},
-              "pair first and last — every pair sums to 101"),
+              "pair first and last — every pair sums to 101",
+              narration="Pair the first number with the last. Every pair sums to one hundred and one."),
         stage("count",
               {"nav": "persistent", "pairing": "leaving", "pair_note": "leaving",
                "count": "entering", "count_note": "entering"},
               {"nav": "static", "pairing": "fade_in", "pair_note": "fade_in",
                "count": "fade_in", "count_note": "fade_in"},
-              "a hundred numbers make fifty pairs"),
+              "a hundred numbers make fifty pairs",
+              narration="A hundred numbers make fifty pairs, each summing to one hundred and one."),
         stage("formula",
               {"nav": "persistent", "count": "leaving", "count_note": "leaving",
                "formula": "entering", "value": "entering"},
               {"nav": "static", "count": "fade_in", "count_note": "fade_in",
                "formula": "write", "value": "fade_in"},
-              "half of n, times n plus one"),
+              "half of n, times n plus one",
+              narration="That gives the formula: half of n, times n plus one. "
+                        "For one hundred, the answer is five thousand and fifty."),
     ]
     return spec
 

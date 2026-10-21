@@ -20,3 +20,4 @@ Thumbs.db
 .DS_Store
 .local_path_tokens
 latex_cache/
+examples/*/deliverables/*/REPRODUCE.md

@@ -76,6 +76,7 @@ class StageSpec:
     result: str | None = None                     # operands_result: the result id
     equation: str | None = None                   # equation_explanation: the equation id
     callouts: list = field(default_factory=list)  # main_callout: ids placed in annotation
+    narration: str | None = None                  # spoken text for this stage (TTS)
 
 
 @dataclass
@@ -85,6 +86,7 @@ class SceneSpec:
     density: str = "comfortable"
     debug: bool = False
     output_dir: str | None = None                 # where reports/stage times are written
+    audio: dict | None = None                     # {"voice","speed","lang","pad"} enables narration
     stages: list = field(default_factory=list)    # [StageSpec]
     components: dict = field(default_factory=dict)  # id -> ComponentSpec (all stages)
 
