@@ -55,7 +55,8 @@ keeps run records).
 8. **Revise** (bounded): fix scene.py → re-preview → re-inspect. **Stop after
    3 revision cycles**; if still failing, deliver the best state with an honest
    note of what's wrong. Success = all success criteria in brief.md pass.
-9. **Final** — `animkit.cmd render <project>` (1080p60).
+9. **Final** — `animkit.cmd render <project>` (1080p60), then `animkit.cmd
+   audio <project> --verify` for narrated scenes.
 10. **Deliver** — `animkit.cmd deliver <project>`; report the packaged folder,
     the video path, what you inspected, and any unverified aspects.
 
@@ -100,6 +101,7 @@ ight` across parts (see references/manimgl-style.md).
 | File | Read when |
 |------|-----------|
 | `references/briefs.md` | turning a vague request into a brief; when to ask vs assume |
+| `references/workflow.md` | **production discipline**: runner + hooks (failed checks block commit/push), timing semantics, visual/audio gates, evidence reporting |
 | `references/scripts.md` | the user wrote (or wants) a **script** — animate it faithfully, or draft one for approval when the request is too thin |
 | `animkit audio` (CLI) | stage `narration=` texts -> Kokoro TTS WAVs + manifest; preview/render sync holds to speech; needs the `audio` extra + eSpeak NG |
 | `references/spec-scenes.md` | **preferred**: spec-driven scenes — declare content + relationships, get solved, validated layouts (`animkit check-layout` dry-runs them) |

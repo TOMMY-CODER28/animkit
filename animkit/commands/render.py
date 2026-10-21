@@ -185,6 +185,11 @@ def _mux_if_audio(project, expected, run):
     from animkit import env as ak_env
     manifest = json.loads(manifest_p.read_text()).get("stages", {})
     stage_times = json.loads(times_p.read_text())
+    # manifest paths are relative to the project root (portable); resolve
+    # against it regardless of the caller's cwd
+    for info in manifest.values():
+        if not Path(info["path"]).is_absolute():
+            info["path"] = str(project.root / info["path"])
     ffmpeg, _ = ak_env.find_ffmpeg(None)
     if not ffmpeg:
         return {"ok": False, "errors": ["no ffmpeg for narration mux"],

@@ -11,6 +11,7 @@ Public API:
 """
 
 import json
+import os
 from pathlib import Path
 
 from animkit.audio.kokoro_provider import KokoroProvider, KOKORO_SAMPLE_RATE
@@ -71,7 +72,12 @@ def generate_project_audio(spec, out_dir, config=None, force=False, log=None):
         if not res.get("ok"):
             errors.extend(f"{stage_id}: {e}" for e in res.get("errors", []))
             continue
-        manifest[stage_id] = res["outputs"]
+        entry = dict(res["outputs"])
+        try:
+            entry["path"] = os.path.relpath(entry["path"], out_dir.parents[1]).replace("\\", "/")
+        except ValueError:
+            pass
+        manifest[stage_id] = entry
 
     total = round(sum(m["duration_s"] for m in manifest.values()), 2)
     result = {

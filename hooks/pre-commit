@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# animkit pre-commit hook: run the FAST required checks; block the commit on
+# any failure. Installed via:  git config core.hooksPath hooks
+set -e
+cd "$(dirname "$0")/.."
+
+if [ -n "$ANIMKIT_PYTHON" ]; then PY="$ANIMKIT_PYTHON"
+elif [ -f "../manim/.venv/Scripts/python.exe" ]; then PY="../manim/.venv/Scripts/python.exe"
+elif [ -f "../manim/.venv/bin/python" ]; then PY="../manim/.venv/bin/python"
+elif [ -f ".venv/Scripts/python.exe" ]; then PY=".venv/Scripts/python.exe"
+else PY="python"; fi
+
+echo "[hooks] pre-commit: fast required checks"
+exec "$PY" tools/check.py --fast

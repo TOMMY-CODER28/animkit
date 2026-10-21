@@ -106,5 +106,25 @@ class TestKokoroProviderOffline(unittest.TestCase):
         self.assertTrue(res["next_actions"], "errors carry next actions")
 
 
+class TestArgvGuard(unittest.TestCase):
+    def test_spec_load_survives_foreign_argv_flags(self):
+        """Regression: importing a scene module runs manimlib's import-time
+        CLI parse; animkit flags (e.g. --json --verify) must not leak into it
+        and kill the load with manimgl's usage error."""
+        import importlib.util
+        from animkit.commands import audio as audio_cmd
+        scene_file = REPO / "examples" / "gaussian-sum" / "scene.py"
+        if not scene_file.is_file():
+            self.skipTest("example not present")
+        saved = sys.argv
+        sys.argv = ["animkit", "--json", "audio", str(scene_file.parent),
+                    "--verify"]
+        try:
+            spec = audio_cmd._load_spec(scene_file)
+        finally:
+            sys.argv = saved
+        self.assertTrue(spec.stages)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -197,7 +197,16 @@ animkit check --smoke
 *Check:* `[ok]` — this compiled a scene through GPU → ffmpeg → mp4. If it
 passes, everything above it works.
 
-**B11. (Optional) Narration / TTS.** Requires the audio extra plus eSpeak NG
+**B11. Install the enforcement hooks** (failed required checks then block
+commit/push mechanically):
+
+```bat
+git config core.hooksPath hooks
+```
+*Check:* `python tools\check.py --fast` passes, and `git commit` with a
+broken test is rejected.
+
+**B12. (Optional) Narration / TTS.** Requires the audio extra plus eSpeak NG
 (English G2P fallback; first generation downloads the Kokoro-82M model,
 ~330 MB, from Hugging Face):
 
@@ -208,7 +217,7 @@ winget install eSpeak-NG.eSpeak-NG
 *Check:* `python -c "import kokoro, soundfile"` inside the venv prints
 nothing, and `espeak-ng --version` resolves on PATH (new shell).
 
-**B12. (Optional) Run the test suites.**
+**B13. (Optional) Run the test suites.**
 
 ```bat
 ..\manim\.venv\Scripts\python tests\test_cli.py
@@ -328,6 +337,14 @@ exposes the `animkit` CLI and the `animkit.layout` Python API.
 ---
 
 ## PART F — verification model
+
+**F0. Check enforcement.** Required checks run ONLY through
+`python tools/check.py` (complete logs under `logs/`, real exit codes,
+one-line summaries). Hooks make this mechanical: pre-commit runs the fast
+set, pre-push the full set — a failed check blocks commit/push until it
+passes. Production discipline (engine/animation separation, timing
+semantics, visual/audio gates, evidence reporting) lives in
+`skill/references/workflow.md`.
 
 **F1.** 54 automated checks: CLI behaviour (config errors, render failures,
 timeouts, packaging), layout engine (bracket orientation, centre spacing vs

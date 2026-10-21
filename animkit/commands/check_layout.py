@@ -22,9 +22,16 @@ def _load_spec(scene_file: Path):
     build_spec() function)."""
     from animkit.env import animkit_root
     sys.path.insert(0, str(animkit_root()))
-    spec = importlib.util.spec_from_file_location("scene_layout_check", scene_file)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # scene modules import manimlib, whose config parses sys.argv at import
+    # time; strip animkit's flags so manimgl's parser never sees them
+    saved_argv = sys.argv
+    sys.argv = [sys.argv[0]]
+    try:
+        spec = importlib.util.spec_from_file_location("scene_layout_check", scene_file)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    finally:
+        sys.argv = saved_argv
     if not hasattr(module, "build_spec"):
         raise ValueError(
             "scene.py has no module-level build_spec() — the layout dry-run and "

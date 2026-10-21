@@ -22,3 +22,5 @@ Thumbs.db
 latex_cache/
 examples/*/deliverables/*/REPRODUCE.md
 examples/*/deliverables/*/audio/
+logs/
+.check_failures

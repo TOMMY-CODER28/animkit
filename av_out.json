@@ -1,0 +1,11 @@
+usage: __main__.py [-h] [-w] [-s] [-l] [-m] [--hd] [--uhd] [-f] [-p] [-i] [-t]
+                   [--vcodec VCODEC] [--pix_fmt PIX_FMT] [-q] [-a] [-o]
+                   [--finder] [--subdivide] [--file_name FILE_NAME]
+                   [-n START_AT_ANIMATION_NUMBER] [-e LINE_NUMBER]
+                   [-r RESOLUTION] [--fps FPS] [-c COLOR]
+                   [--leave_progress_bars] [--show_animation_progress]
+                   [--prerun] [--video_dir VIDEO_DIR]
+                   [--config_file CONFIG_FILE] [-v] [--log-level LOG_LEVEL]
+                   [--clear-cache] [--autoreload]
+                   [file] [scene_names ...]
+__main__.py: error: unrecognized arguments: --json --verify

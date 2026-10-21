@@ -36,6 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--speed", type=float, help="speech speed multiplier (default 1.0)")
     p.add_argument("--lang", help="language code: 'a' American English, 'b' British, ...")
     p.add_argument("--force", action="store_true", help="regenerate even if cached")
+    p.add_argument("--verify", action="store_true", help="verify narration against the rendered timeline (no generation)")
 
     p = sub.add_parser("new", help="create a project from template")
     p.add_argument("name", help="project name, e.g. 'fourier-intro'")

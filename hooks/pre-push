@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# animkit pre-push hook: run the FULL required check set; block the push on
+# any failure. Also shows the intended diff summary for review.
+set -e
+cd "$(dirname "$0")/.."
+
+if [ -n "$ANIMKIT_PYTHON" ]; then PY="$ANIMKIT_PYTHON"
+elif [ -f "../manim/.venv/Scripts/python.exe" ]; then PY="../manim/.venv/Scripts/python.exe"
+elif [ -f "../manim/.venv/bin/python" ]; then PY="../manim/.venv/bin/python"
+elif [ -f ".venv/Scripts/python.exe" ]; then PY=".venv/Scripts/python.exe"
+else PY="python"; fi
+
+echo "[hooks] pre-push: intended diff (review before push)"
+git diff --stat @{push} 2>/dev/null || git diff --stat HEAD
+echo "[hooks] pre-push: full required checks"
+exec "$PY" tools/check.py

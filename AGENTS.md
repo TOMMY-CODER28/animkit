@@ -62,7 +62,12 @@ ight` across parts; `animkit.cmd
    with `animkit audio <project>` BEFORE rendering; preview/render extend
    holds to fit measured durations. Audio needs the optional extra
    (`pip install -e .[audio]`) and eSpeak NG.
-7. Paths contain no spaces in this repo, but quote them anyway; the launchers
+7. **Required checks run through the runner**: `python tools/check.py --fast`
+   (pre-commit) and `python tools/check.py` (pre-push, via hooks). Their exit
+   codes gate commit/push; failing checks block until fixed. Production
+   discipline (engine/animation separation, timing semantics, verification
+   gates, evidence reporting): `skill/references/workflow.md`.
+8. Paths contain no spaces in this repo, but quote them anyway; the launchers
    (`animkit.cmd` / `animkit.sh`) route through the ManimGL venv at
    `<manim-venv>` — do not pip-install into it without need.
 
