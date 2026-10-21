@@ -189,8 +189,17 @@ def _mux_if_audio(project, expected, run):
     if not ffmpeg:
         return {"ok": False, "errors": ["no ffmpeg for narration mux"],
                 "next_actions": ["pip install imageio-ffmpeg into the venv"]}
+    video_dur = None
+    try:
+        import av
+        c = av.open(str(expected))
+        video_dur = float(c.duration) / 1e6
+        c.close()
+    except Exception:
+        pass
     track = build_narration_track(stage_times, manifest, audio_dir,
-                                  ffmpeg_exe=str(ffmpeg))
+                                  ffmpeg_exe=str(ffmpeg),
+                                  total_duration=video_dur)
     run.log_line(f"[animkit] narration track: {track}")
     return mux_narration(str(expected), track["path"], str(ffmpeg))
 

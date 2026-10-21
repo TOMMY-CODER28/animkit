@@ -98,10 +98,13 @@ def generate_project_audio(spec, out_dir, config=None, force=False, log=None):
     return result
 
 
-def build_narration_track(stage_times, manifest, out_dir, ffmpeg_exe=None):
+def build_narration_track(stage_times, manifest, out_dir, ffmpeg_exe=None,
+                          total_duration=None):
     """Assemble one 24 kHz narration track aligned to the video timeline:
-    silence until each stage's t_start, then that stage's WAV. Returns the
-    track path and total duration. Requires soundfile + numpy only."""
+    silence until each stage's t_start, then that stage's WAV. When
+    total_duration is given, the track is padded with silence to exactly that
+    length so muxing never truncates the video's final holds. Requires
+    soundfile + numpy only."""
     import numpy as np
     import soundfile as sf
     out_dir = Path(out_dir)
@@ -124,6 +127,8 @@ def build_narration_track(stage_times, manifest, out_dir, ffmpeg_exe=None):
     if sr is None:
         raise ValueError("no narration audio to assemble")
 
+    if total_duration is not None:
+        total = max(total, float(total_duration))
     n = int(round(total * sr)) + sr // 10  # +0.1 s tail
     track = np.zeros(n, dtype="float32")
     for start_frame, data in segments:

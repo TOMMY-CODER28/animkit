@@ -222,13 +222,15 @@ class SpecScene(Scene):
             self.add(cap_comp.group)
 
         hold = timings["hold"]
-        # narration sync: extend this stage's hold so the stage lasts at least
-        # as long as its narration audio (+pad). Audio is generated BEFORE the
-        # render (animkit audio) — this only reads measured durations.
+        # narration sync: the stage must outlast its narration (+ breathing
+        # pad), and the scripted hold then runs AFTER the narration ends —
+        # pacing hints like "(hold 2s)" mean sink-in time on top of speech.
+        # Audio is generated BEFORE the render (animkit audio); this only
+        # reads measured durations.
         audio_pad = float((self.spec.audio or {}).get("pad", 0.35))
         if stage.id in self.audio_durations:
             elapsed = self._t - t0
-            needed = self.audio_durations[stage.id] + audio_pad
+            needed = self.audio_durations[stage.id] + audio_pad + hold
             if needed > elapsed + hold:
                 self.warnings.append(
                     f"stage {stage.id}: hold extended by "
